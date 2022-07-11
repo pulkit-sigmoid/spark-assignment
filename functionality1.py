@@ -8,7 +8,10 @@ from flask import Flask, request
 
 spark = SparkSession.builder.master("local")
 
-stock_names = ["AAN", "AAON", "AAT", "AAWW", "ABCB"]
+stock_names = ["AAN", "AAON", "AAT", "AAWW", "ABCB", "ABG", "ABM", "ABTX", "ACA", "ACLS",
+               "ADC", "ADTN", "ADUS", "AEIS", "AEL", "AGO", "AGYS", "AHH", "AIN", "AIR",
+               "AIT", "AJRD", "AKR", "ALEX", "ALG", "ALGT", "ALRM", "AMBC", "AMCX", "AMEH",
+               "AMN", "AMPH", "AMSF", "AMWD", "ANDE"]
 
 spark = SparkSession.builder \
     .master("local") \
@@ -36,7 +39,7 @@ def result():
 def fun():
     df_stocks = None
     for stock_name in stock_names:
-        df = spark.read.option("header", "true").csv(f"{stock_name}.csv", inferSchema=True)  # first way
+        df = spark.read.option("header", "true").csv(f"Stocks/{stock_name}.csv", inferSchema=True)  # first way
         df = df.withColumn("Stock_names", lit(stock_name))
         df = df.withColumn("Stock_moved_Percentage", (((col("Close") - col("Open")) / col("Open")) * 100))
         if df_stocks is None:
@@ -54,9 +57,6 @@ def fun():
               "Stock_moved_Percentage in (select Negative from temp2 where data.Date == temp2.Date))")
     result = spark.sql("select temp3.Date, temp3.Positive_Stock_Names, temp3.Positive_Percentage, temp4.Negative_Stock_Names, "
               "temp4.Negative_Percentage from temp3 inner join temp4 on temp3.Date == temp4.Date order by temp3.Date")
-
-    spark.sql("create temporary view temp as (select Date, max(Volume) as Max_Volume from data group by Date)")
-    spark.sql("select temp.Date, Max_Volume, Stock_names from temp inner join data on temp.Date==data.Date").show()
 
     result.show()
     return jsonify(json.loads(result.toPandas().to_json(orient="table", index=False)))

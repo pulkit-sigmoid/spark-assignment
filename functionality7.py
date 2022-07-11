@@ -25,7 +25,7 @@ def result():
 def fun():
     df_stocks = None
     for stock_name in stock_names:
-        df = spark.read.option("header", "true").csv(f"{stock_name}.csv", inferSchema=True)  # first way
+        df = spark.read.option("header", "true").csv(f"Stocks/{stock_name}.csv", inferSchema=True)  # first way
         df = df.withColumn("Stock_names", lit(stock_name))
         df = df.withColumn("Stock_moved_Percentage", (((col("Close") - col("Open")) / col("Open")) * 100))
         if df_stocks is None:
