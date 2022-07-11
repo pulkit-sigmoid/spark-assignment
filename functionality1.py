@@ -41,15 +41,14 @@ def fun():
     for stock_name in stock_names:
         df = spark.read.option("header", "true").csv(f"Stocks/{stock_name}.csv", inferSchema=True)  # first way
         df = df.withColumn("Stock_names", lit(stock_name))
-        df = df.withColumn("Stock_moved_Percentage", (((col("Close") - col("Open")) / col("Open")) * 100))
         if df_stocks is None:
             df_stocks = df
         else:
             df_stocks = df_stocks.union(df)
     df_stocks.createOrReplaceTempView("data")
-    spark.sql("create temporary view temp1 as (select Date, max(Stock_moved_Percentage) as Positive from data group by "
+    spark.sql("create temporary view temp1 as (select Date, max((High - Open)/Open * 100) as Positive from data group by "
               "date)")
-    spark.sql("create temporary view temp2 as (select Date, min(Stock_moved_Percentage) as Negative from data group by "
+    spark.sql("create temporary view temp2 as (select Date, min((Open - Low)/Low * 100) as Negative from data group by "
               "date)")
     spark.sql("create temporary view temp3 as (select Date, stock_names as Positive_Stock_Names, Stock_moved_Percentage as Positive_Percentage from data where "
               "Stock_moved_Percentage in (select Positive from temp1 where data.Date == temp1.Date))")
