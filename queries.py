@@ -1,3 +1,6 @@
+# query1 can be improved by using rank .
+# All other  qureies are written efficiently. 
+# Try to reduce the number of views created to solve the queries.
 import json
 from flask import jsonify
 import pandas as pd
@@ -37,7 +40,7 @@ df_stocks = None
 
 
 for stock_name in stock_names:
-    df = spark.read.option("header", "true").csv(f"Stocks/{stock_name}.csv", inferSchema=True)  # first way
+    df = spark.read.option("header", "true").csv(f"Stocks/{stock_name}.csv", inferSchema=True)  # first way       
     df = df.withColumn("Stock_names", lit(stock_name))
     if df_stocks is None:
         df_stocks = df
